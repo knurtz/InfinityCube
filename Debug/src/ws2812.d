@@ -10,7 +10,7 @@ src/ws2812.o: ../src/ws2812.c \
  /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/lib/STM32F10x_StdPeriph_Driver/inc/misc.h \
  /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/lib/STM32F10x_StdPeriph_Driver/inc/stm32f10x_tim.h \
  /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/lib/STM32F10x_StdPeriph_Driver/inc/stm32f10x_dma.h \
- /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/ws2812-config.h \
+ /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/config.h \
  /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/delay.h
 
 /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/ws2812.h:
@@ -35,6 +35,6 @@ src/ws2812.o: ../src/ws2812.c \
 
 /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/lib/STM32F10x_StdPeriph_Driver/inc/stm32f10x_dma.h:
 
-/home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/ws2812-config.h:
+/home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/config.h:
 
 /home/johannes/Documents/Programmierung/eclipse-workspace/InfinityCube/inc/delay.h:

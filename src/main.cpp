@@ -1,5 +1,5 @@
 /**
- * @main.c
+ * @main.cpp
  *
  * Boilerplate Project for STM32F103C8 as explained on
  * http://www.atakansarioglu.com/stm32-project-from-scratch-on-eclipse/
@@ -9,16 +9,14 @@
  *
  */
 #include "stm32f10x.h"
+#include "stm32f10x_conf.h"
 
-//#include "ws2812.h"
+#include "config.h"
+#include "ws2812.h"
 #include "delay.h"
 
-// neue Klasse: LEDCube
-// kriegt LEDBuffer, LEDs, Offset und Richtung pro Kante
-// Funktionen:
-// setPixel(side, number, colorRGB);
-// setSide(side, colorRGB);
-// setAll(colorRGB);
+#include "basic_animation.h"
+#include "animations.h"
 
 // neue Klasse: SimpleAnimation
 // kriegt LEDCube
@@ -44,15 +42,17 @@ int main(void) {
 
     GPIO_WriteBit(GPIOC, GPIO_Pin_13, Bit_RESET);
 
+    LEDCube main_cube;
 
 
+    SimpleAnimation foo = SimpleAnimation(&main_cube);
 
 
 	while(1) {
 		// Main Loop Delay für 40 fps
 		delay_msec(25);
 
-		GPIO_WriteBit(GPIOC, GPIO_Pin_13, !GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13));
+		GPIO_WriteBit(GPIOC, GPIO_Pin_13, GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) ? Bit_RESET : Bit_SET);
 
 
 		// von aktueller Animationsklasse nextFrame() aufrufen

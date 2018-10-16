@@ -27,7 +27,7 @@
  */
 #include <string.h>
 #include "ws2812.h"
-#include "ws2812-config.h"
+#include "config.h"
 #include "delay.h"
 //#include "io.h"
 
@@ -45,25 +45,25 @@
  *    freq = 72000000 / (0 + 1) / ( 91 + 1) = 783 kHz = 1.277 us
  *-------------------------------------------------------------------------------------------------------------------------------------------
  */
-#define WS2812_TIM_CLK              72L                         // system clock of F103 board = 72 MHz = 13.89ns
-
 #define WS2812_BIT_PER_LED          24                          // 3 * 8bit per LED, each bit costs 1.270us time
+
+#define WS2812_TIM_CLK              72L                         // system clock of F103 board = 72 MHz = 13.89ns
 #define WS2812_TIM_PERIOD_TIME      1270                        // 1270 nsec
 #define WS2812_TIM_PRESCALER        0                           // no prescaler
 #define WS2812_T0H_TIME             470                         // 470ns
 #define WS2812_T1H_TIME             800                         // 800ns
 #define WS2812_T0L_TIME             800                         // 800ns
 #define WS2812_T1L_TIME             470                         // 470ns
-#define WS2812_PAUSE_TIME        	100000                       // pause, should be longer than 50us
+#define WS2812_PAUSE_TIME        	100000                      // pause, should be longer than 50us
 //#define WS2812_PAUSE_TIME           300000                      // WS2812S (special chinese version) need a pause longer than 280us
 
-#define WS2812_TIM_PERIOD_FLOAT     (((WS2812_TIM_CLK / (1 + WS2812_TIM_PRESCALER)) * WS2812_TIM_PERIOD_TIME) / 1000.0 - 1.0)   // 106,68 @84MHz
-#define WS2812_TIM_PERIOD           (uint16_t) (WS2812_TIM_PERIOD_FLOAT + 0.5)                                                  // 107
-#define WS2812_T0H                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T0H_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  39
-#define WS2812_T1H                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T1H_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  67
-#define WS2812_T0L                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T0L_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  67
-#define WS2812_T1L                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T1L_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  39
-#define WS2812_PAUSE_LEN            (uint16_t) (WS2812_PAUSE_TIME / WS2812_TIM_PERIOD_TIME + 1)                                 //  40
+#define WS2812_TIM_PERIOD_FLOAT     (((WS2812_TIM_CLK / (1 + WS2812_TIM_PRESCALER)) * WS2812_TIM_PERIOD_TIME) / 1000.0 - 1.0)   // 106,68 @84MHz / 90,44 @ 72 MHz
+#define WS2812_TIM_PERIOD           (uint16_t) (WS2812_TIM_PERIOD_FLOAT + 0.5)                                                  // 107 / 90
+#define WS2812_T0H                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T0H_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  39 / 33
+#define WS2812_T1H                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T1H_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  67 / 57
+#define WS2812_T0L                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T0L_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  67 / 57
+#define WS2812_T1L                  (uint16_t) ((WS2812_TIM_PERIOD_FLOAT * WS2812_T1L_TIME) / WS2812_TIM_PERIOD_TIME + 0.5)     //  39 / 33
+#define WS2812_PAUSE_LEN            (uint16_t) (WS2812_PAUSE_TIME / WS2812_TIM_PERIOD_TIME + 1)                                 //  79
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------
  * DMA buffer
@@ -130,7 +130,7 @@ ws2812_dma_init (void)
     DMA_DeInit(WS2812_DMA_STREAM);
 
     dma.DMA_Mode                = DMA_Mode_Circular;
-    dma.DMA_PeripheralBaseAddr  = (uint32_t) &WS2812_TIM_CCR_REG1;                                                                       // STM32F10x
+    dma.DMA_PeripheralBaseAddr  = (uint32_t) &WS2812_TIM_CCR_REG1;          // STM32F10x
     dma.DMA_PeripheralDataSize  = DMA_PeripheralDataSize_HalfWord;          // 16bit
     dma.DMA_MemoryDataSize      = DMA_MemoryDataSize_Byte;                  // 8bit, saves RAM
     dma.DMA_BufferSize          = DMA_BUF_LEN;
@@ -200,17 +200,10 @@ ws2812_setup_dma_buf (uint_fast8_t at_half_pos)
     {
         led = rgb_buf[current_rgb_buf_idx] + current_led_offset;
 
-#if DSP_USE_WS2812_GRB == 1                                     // order G R B
-        for (i = 0x80; i != 0; i >>= 1)                         // color green
-        {
-            *timer_p++ = (led->green & i) ? WS2812_T1H : WS2812_T0H;
-        }
 
-        for (i = 0x80; i != 0; i >>= 1)                         // color red
-        {
-            *timer_p++ = (led->red & i) ? WS2812_T1H : WS2812_T0H;
-        }
-#else // DSP_USE_WS2812_RGB == 1                                // order R G B
+
+// order R G B
+        /*
         for (i = 0x80; i != 0; i >>= 1)                         // color red
         {
             *timer_p++ = (led->red & i) ? WS2812_T1H : WS2812_T0H;
@@ -220,7 +213,18 @@ ws2812_setup_dma_buf (uint_fast8_t at_half_pos)
         {
             *timer_p++ = (led->green & i) ? WS2812_T1H : WS2812_T0H;
         }
-#endif
+        */
+
+// order G R B
+		for (i = 0x80; i != 0; i >>= 1)                         // color green
+		{
+			*timer_p++ = (led->green & i) ? WS2812_T1H : WS2812_T0H;
+		}
+
+		for (i = 0x80; i != 0; i >>= 1)                         // color red
+		{
+			*timer_p++ = (led->red & i) ? WS2812_T1H : WS2812_T0H;
+		}
 
         for (i = 0x80; i != 0; i >>= 1)                         // color blue
         {
@@ -297,10 +301,7 @@ ws2812_refresh (uint_fast16_t n_leds)
         n_leds = WS2812_MAX_LEDS;
     }
 
-    while (ws2812_dma_status != 0)
-    {
-        ;                                                        // wait until DMA transfer is ready
-    }
+    while (ws2812_dma_status != 0);					// wait until DMA transfer is ready
 
     current_rgb_buf_idx     = next_rgb_buf_idx;
     next_rgb_buf_idx        = next_rgb_buf_idx ? 0 : 1;
