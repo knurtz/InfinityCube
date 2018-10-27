@@ -18,13 +18,6 @@
 #include "basic_animation.h"
 #include "animations.h"
 
-// neue Klasse: SimpleAnimation
-// kriegt LEDCube
-// Funktionen:
-// nextFrame(); -> geht alle Seiten des Würfels durch und setzt der Reihe nach einen Pixel
-
-// weitere Animationsklassen
-
 
 int main(void) {
 
@@ -45,7 +38,7 @@ int main(void) {
     LEDCube main_cube;
 
 
-    SimpleAnimation foo = SimpleAnimation(&main_cube);
+    SimpleAnimation foo_animation = SimpleAnimation(&main_cube);
 
 
 	while(1) {
@@ -55,8 +48,10 @@ int main(void) {
 		GPIO_WriteBit(GPIOC, GPIO_Pin_13, GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) ? Bit_RESET : Bit_SET);
 
 
-		// von aktueller Animationsklasse nextFrame() aufrufen
 
+
+		// von aktueller Animationsklasse nextFrame() aufrufen
+		foo_animation.next_frame();
 
 		// LEDs refreshen, falls WS2812 nicht im kontinuierlichen Modus läuft
 
