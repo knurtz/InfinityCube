@@ -18,12 +18,14 @@
 #include "basic_animation.h"
 #include "animations.h"
 
+LEDCube main_cube;
+SimpleAnimation foo_animation = SimpleAnimation(&main_cube);
 
 int main(void) {
 
-	// initialize everything
-	delay_init (DELAY_RESOLUTION_5_US);				// init delay with granularity of 5us
-	//ws2812_init();
+	// initialize some stuff
+	delay_init(DELAY_RESOLUTION_10_US);				// delay with granularity of 10 us
+	ws2812_init();
 
 	// init LED pin PC13
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
@@ -35,29 +37,22 @@ int main(void) {
 
     GPIO_WriteBit(GPIOC, GPIO_Pin_13, Bit_RESET);
 
-    LEDCube main_cube;
-
-
-    SimpleAnimation foo_animation = SimpleAnimation(&main_cube);
 
 
 	while(1) {
 		// Main Loop Delay für 40 fps
 		delay_msec(25);
 
+		// blink LED
 		GPIO_WriteBit(GPIOC, GPIO_Pin_13, GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) ? Bit_RESET : Bit_SET);
-
-
-
 
 		// von aktueller Animationsklasse nextFrame() aufrufen
 		foo_animation.next_frame();
 
 		// LEDs refreshen, falls WS2812 nicht im kontinuierlichen Modus läuft
-
+		ws2812_refresh(WS2812_MAX_LEDS);
 
 		// nach einiger Zeit: Animationsklasse abwechseln
-
 
 	}
 
