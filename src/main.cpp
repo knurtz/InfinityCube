@@ -18,8 +18,11 @@
 #include "basic_animation.h"
 #include "animations.h"
 
-LEDCube main_cube;
-SimpleAnimation foo_animation = SimpleAnimation(&main_cube);
+//LEDCube main_cube;
+//SimpleAnimation foo_animation = SimpleAnimation(&main_cube);
+
+WS2812_RGB off = {0, 0, 0};
+WS2812_RGB red = {255, 0, 0};
 
 int main(void) {
 
@@ -37,7 +40,8 @@ int main(void) {
 
     GPIO_WriteBit(GPIOC, GPIO_Pin_13, Bit_RESET);
 
-
+    ws2812_set_all_leds(&off, WS2812_MAX_LEDS, true);
+    int current_led = 0;
 
 	while(1) {
 		// Main Loop Delay für 40 fps
@@ -46,13 +50,19 @@ int main(void) {
 		// blink LED
 		GPIO_WriteBit(GPIOC, GPIO_Pin_13, GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) ? Bit_RESET : Bit_SET);
 
-		// von aktueller Animationsklasse nextFrame() aufrufen
-		foo_animation.next_frame();
 
-		// LEDs refreshen, falls WS2812 nicht im kontinuierlichen Modus läuft
+		// von aktueller Animationsklasse nextFrame() aufrufen
+		//foo_animation.next_frame();
+
+		// LEDs refreshen
+		current_led++;
+		if (current_led == WS2812_MAX_LEDS) current_led = 0;
+
+		ws2812_set_led(current_led, &red);
+
 		ws2812_refresh(WS2812_MAX_LEDS);
 
-		// nach einiger Zeit: Animationsklasse abwechseln
+		ws2812_set_led(current_led, &off);
 
 	}
 
