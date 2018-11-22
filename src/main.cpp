@@ -23,6 +23,7 @@
 
 WS2812_RGB off = {0, 0, 0};
 WS2812_RGB red = {255, 0, 0};
+WS2812_RGB light_blue = {50, 50, 255};
 
 int main(void) {
 
@@ -45,7 +46,7 @@ int main(void) {
 
 	while(1) {
 		// Main Loop Delay für 40 fps
-		delay_msec(25);
+		delay_msec(100);
 
 		// blink LED
 		GPIO_WriteBit(GPIOC, GPIO_Pin_13, GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13) ? Bit_RESET : Bit_SET);
@@ -58,7 +59,7 @@ int main(void) {
 		current_led++;
 		if (current_led == WS2812_MAX_LEDS) current_led = 0;
 
-		ws2812_set_led(current_led, &red);
+		ws2812_set_led(current_led, &light_blue);
 
 		ws2812_refresh(WS2812_MAX_LEDS);
 
