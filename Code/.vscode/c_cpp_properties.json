@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "STM32",
+            "includePath": [
+                "${workspaceRoot}/**"
+            ],
+            "defines": [
+                "HSE_VALUE=8000000",
+                "USE_STDPERIPH_DRIVER",
+                "STM32F10X_MD"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "compilerPath": "C:\\Program Files (x86)\\GNU Arm Embedded Toolchain\\9 2020-q2-update\\bin\\arm-none-eabi-gcc.exe",
+            "compilerArgs": [],
+            "cStandard": "c11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
