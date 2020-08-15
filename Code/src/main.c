@@ -17,7 +17,8 @@
 
 
 WS2812_RGB off = {0, 0, 0};
-WS2812_RGB base_color = {0, 0, 0};
+WS2812_RGB red = {255, 0, 0};
+WS2812_RGB base_color = {255, 0, 0};
 
 int32_t anim_temp[4];					// 4 global 32-bit temp variables for animations to use
 uint16_t current_animation = 0;
@@ -28,6 +29,28 @@ void color_dim(WS2812_RGB * rgb, float factor) {
 	rgb->green *= factor;
 	rgb->blue *= factor;
 	return;
+}
+
+void color_inc(WS2812_RGB * rgb, uint8_t factor) {
+
+	while(factor--) {
+		if (rgb->blue == 0) {	// first third
+			if (rgb->red == 255) rgb->green++;
+			if (rgb->green == 255) rgb->red--;
+			if (rgb->red == 0) rgb->blue++;
+		}
+
+		else if (rgb->red == 0) {
+			if (rgb->green == 255) rgb->blue++;
+			if (rgb->blue == 255) rgb->green--;
+			if (rgb->green == 0) rgb-> red++;		
+		}
+
+		else if (rgb->green == 0) {
+			if (rgb->blue == 255) rgb->red++;
+			if (rgb->red == 255) rgb->blue--;		
+		}
+	}
 }
 
 // simple dot going aroung the whole strip
@@ -59,14 +82,26 @@ void chasing_dot_trail(void) {
 	ws2812_set_all_leds(&off, WS2812_MAX_LEDS, 0);
 	if (anim_temp[0] == WS2812_MAX_LEDS) anim_temp[0] = 0;
 
-	for (uint8_t i = 0; i < 6; i++) {
+	for (uint8_t i = 0; i < 8; i++) {
 		if (anim_temp[0] - i < 0) break;
 		ws2812_set_led(anim_temp[0] - i, &temp_color);
-		color_dim(&temp_color, 0.75);
+		color_dim(&temp_color, 0.7);
 	}
 
 	anim_temp[0]++;
 	return;
+}
+
+void full_rainbow(void) {
+	if (anim_temp[0] == WS2812_MAX_LEDS) anim_temp[0] = 0;
+	WS2812_RGB temp_color = base_color;
+	uint16_t stepsize = 6 * 255 / WS2812_MAX_LEDS;		// 6 * 255 steps from red to red on color circle, divided by number of LEDs
+	for (int i = 0; i < WS2812_MAX_LEDS; i++) {
+		ws2812_set_led(i, &temp_color);		
+		// get next pixel color	
+		color_inc(&temp_color, stepsize);
+	}
+	anim_temp[0]++;
 }
 
 void full_color_fade(void) {
@@ -74,7 +109,8 @@ void full_color_fade(void) {
 }
 
 void (*anims[NUM_ANIMS])(void) = {
-	full_color_fade,
+	full_rainbow,
+	//full_color_fade,
 	chasing_dot_trail,
 	chasing_dot_edge,
 	//chasing_dot,
@@ -121,6 +157,7 @@ int main(void) {
 		// initial color fade: red up from black
 		// phases: green up, red down, blue up, green down, red up, blue down
 		// compare this image: https://i.stack.imgur.com/BE73L.png
+		/*
 		switch (anim_temp[3]) {
 			case 0:
 				base_color.red += FADE_SPEED;
@@ -151,6 +188,8 @@ int main(void) {
 				if ((int16_t)(base_color.blue - FADE_SPEED) < 0) anim_temp[3] = 1;
 				break;
 		}
+		*/
+		color_inc(&base_color, 4);
 #endif
 
 		// blink LED
